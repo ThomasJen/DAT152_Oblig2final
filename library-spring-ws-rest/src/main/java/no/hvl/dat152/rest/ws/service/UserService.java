@@ -24,6 +24,8 @@ public class UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private OrderService orderService; 
 
 	
 	public List<User> findAllUsers(){
@@ -42,17 +44,53 @@ public class UserService {
 	}
 	
 	
-	// TODO public User saveUser(User user)
+	public User saveUser(User user) {
+		
+		user = userRepository.save(user);
+		return user;
+		
+	}
 	
-	// TODO public void deleteUser(Long id) throws UserNotFoundException 
+	public void deleteUser(Long id) throws UserNotFoundException {
+		
+		User user = findUser(id);
+		userRepository.delete(user);
+		
+	}
 	
-	// TODO public User updateUser(User user, Long id)
+	public User updateUser(User user, Long id) throws UserNotFoundException { 
+		
+		User usertoUpdate = findUser(id);
+		long id1 = usertoUpdate.getUserid(); 
+		user.setUserid(id);
+		userRepository.save(user);
+		
+		return user;
+	}
 	
-	// TODO public Set<Order> getUserOrders(Long userid) 
+	public Set<Order> getUserOrders(Long userId) throws UserNotFoundException {
+		
+		User user = findUser(userId);
+		return user.getOrders();
+		
+	}
 	
 	// TODO public Order getUserOrder(Long userid, Long oid)
 	
 	// TODO public void deleteOrderForUser(Long userid, Long oid)
 	
-	// TODO public User createOrdersForUser(Long userid, Order order)
+	public User createOrdersForUser(Long userid, Order order) throws UserNotFoundException {
+		
+		Order o1 = orderService.saveOrder(order);
+		User user = findUser(userid);
+		
+		Set<Order> orders = user.getOrders();
+		
+		orders.add(o1);
+		user.setOrders(orders);
+		
+		updateUser(user, userid);
+		
+		return user;
+	}
 }

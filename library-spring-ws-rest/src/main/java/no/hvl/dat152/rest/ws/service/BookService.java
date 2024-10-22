@@ -48,14 +48,62 @@ public class BookService {
 		return book;
 	}
 	
-	// TODO public Book updateBook(Book book, String isbn)
+	public Book updateBook(Book book, String isbn) throws BookNotFoundException {
+		
+		Book bookToupdate = findByISBN(isbn);
+
+		bookToupdate.setTitle(book.getTitle());
+		bookToupdate.setIsbn(book.getIsbn());
+		bookToupdate.setAuthors(book.getAuthors());
+
+		return bookRepository.save(bookToupdate);
+		
+	}
 	
-	// TODO public List<Book> findAllPaginate(Pageable page)
+	public List<Book> findAllPaginate(Pageable page) {
+		
+		Page<Book> books = bookRepository.findAll(page);
+
+		return books.getContent();
+		
+	}
 	
-	// TODO public Set<Author> findAuthorsOfBookByISBN(String isbn)
+	public Set<Author> findAuthorsOfBookByISBN(String isbn) {
+		
+		Book book = bookRepository.findBookByISBN(isbn);
+
+		return book.getAuthors();
+		
+	}
 	
-	// TODO public void deleteById(long id)
+	public void deleteById(long id) throws BookNotFoundException {
+		
+		Book deleteBook = findById(id);
+		bookRepository.delete(deleteBook);
+		
+	}
 	
-	// TODO public void deleteByISBN(String isbn) 
+	public Book findById(long id) throws BookNotFoundException {
+	
+		Book book = findBookById(id);
+		
+		return book;
+	}
+
+	private Book findBookById(long id) throws BookNotFoundException {
+		
+		Book book = bookRepository.findById(id)
+				.orElseThrow(() -> new BookNotFoundException("Book with id = " + id + " not found!"));
+
+		return book;
+	}
+		
+
+	public void deleteByISBN(String isbn) throws BookNotFoundException {
+		
+		Book bookToDelete = findByISBN(isbn);
+		bookRepository.delete(bookToDelete);
+		
+	}
 	
 }

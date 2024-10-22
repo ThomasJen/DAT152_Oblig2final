@@ -20,5 +20,6 @@ import no.hvl.dat152.rest.ws.repository.AuthorRepository;
 @Service
 public class AuthorService {
 
+	
 	// TODO copy your solutions from previous tasks!
 }

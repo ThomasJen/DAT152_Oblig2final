@@ -8,6 +8,7 @@ import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import no.hvl.dat152.rest.ws.exceptions.OrderNotFoundException;
 import no.hvl.dat152.rest.ws.exceptions.UserNotFoundException;
 import no.hvl.dat152.rest.ws.model.Order;
 import no.hvl.dat152.rest.ws.model.User;
+import no.hvl.dat152.rest.ws.service.OrderService;
 import no.hvl.dat152.rest.ws.service.UserService;
 
 /**
@@ -35,6 +37,9 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private OrderService orderService;
 	
 	@GetMapping("/users")
 	public ResponseEntity<Object> getUsers(){
@@ -57,19 +62,72 @@ public class UserController {
 		
 	}
 	
-	// TODO - createUser (@Mappings, URI=/users, and method)
+	@PostMapping("/users")
+	public ResponseEntity<Object> createUser(@RequestBody User user) {
+		
+		user = userService.saveUser(user);
+		
+		return new ResponseEntity<>(user, HttpStatus.CREATED);
+		
+	}
 
-	// TODO - updateUser (@Mappings, URI, and method)
+	@PutMapping("/users/{id}")
+	public ResponseEntity<Object> updateUser (@RequestBody User user, 
+						@PathVariable("id") Long id) throws UserNotFoundException {
+		
+		user = userService.updateUser(user, id);
+		
+		return new ResponseEntity<>(user, HttpStatus.OK);
+		
+	}
 	
-	// TODO - deleteUser (@Mappings, URI, and method)
-
-	// TODO - getUserOrders (@Mappings, URI=/users/{id}/orders, and method)
+	@DeleteMapping("/users/{id}")
+	public ResponseEntity<Object> deleteUser (@PathVariable("id") Long id) throws UserNotFoundException {
+		
+		userService.deleteUser(id);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+		
+	}
+	
+	@GetMapping("/users/{id}/orders")
+	public ResponseEntity<Object> getUserOrders (@PathVariable("id") Long id) throws UserNotFoundException {
+		
+		Set<Order> orders = userService.getUserOrders(id);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+		
+	}
+	
 	
 	// TODO - getUserOrder (@Mappings, URI=/users/{uid}/orders/{oid}, and method)
+	 public EntityModel<Order> getUserOrder(@PathVariable Long userId, @PathVariable Long orderId) throws OrderNotFoundException {
+	        // Fetch order by ID from the service
+	        Order order = orderService.findOrder(orderId);
+	        return EntityModel.of(order,
+	                linkTo(methodOn(UserController.class).getUserOrder(userId, orderId)).withSelfRel());
+	 }
 
 	// TODO - deleteUserOrder (@Mappings, URI, and method)
 	
-	// TODO - createUserOrder (@Mappings, URI, and method) + HATEOAS links
-
+	@PostMapping("/users/{id}/orders")
+	public EntityModel<Order> createUserOrder (@PathVariable("id") Long userId, @RequestBody Order newOrder) 
+			throws UserNotFoundException, OrderNotFoundException {
+		
+		Order savedOrder = orderService.saveOrder(newOrder);
+		
+		//	+ HATEOAS links
+		EntityModel<Order> resource = EntityModel.of(savedOrder); 
+		
+		resource.add(linkTo(methodOn(UserController.class).getUserOrder(userId, savedOrder.getId())).withSelfRel());
+		
+		resource.add(linkTo(methodOn(UserController.class).getUserOrders(userId)).withRel("user-orders"));
+		
+		resource.add(linkTo(methodOn(UserController.class).updateUser(null, userId)).withRel("update-user"));
+		
+		resource.add(linkTo(methodOn(UserController.class).getUser(userId)).withRel("get-user"));
+		
+		return resource;
+	}
 	
 }

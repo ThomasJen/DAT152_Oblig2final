@@ -37,12 +37,59 @@ import no.hvl.dat152.rest.ws.service.OrderService;
 @RequestMapping("/elibrary/api/v1")
 public class OrderController {
 
-	// TODO - getAllBorrowOrders (@Mappings, URI=/orders, and method) + filter by expiry and paginate 
+	@Autowired
+	private OrderService orderService;
 	
-	// TODO - getBorrowOrder (@Mappings, URI=/orders/{id}, and method)
+	@GetMapping("/orders")
+   	public ResponseEntity<Object> getAllBorrowOrders (
+   			@RequestParam(required = false) LocalDate expiry,
+   			@RequestParam(defaultValue = "0") int page,
+   			@RequestParam(defaultValue = "3") int size){
+		
+		Pageable pageable = PageRequest.of(page, size);
+		
+		if(expiry != null) {
+			return new ResponseEntity<>(orderService.findByExpiryDate(expiry, pageable), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(orderService.findAllOrders(), HttpStatus.OK);
+		}
+	}
+	//filter by expiry and paginate 
+   	
+   	
+	@GetMapping("/orders/{id}")
+	public ResponseEntity<Object> getBorrowOrder (@PathVariable("id") Long id) throws OrderNotFoundException{
+		
+		try {
+			Order order = orderService.findOrder(id);
+			return new ResponseEntity<>(order, HttpStatus.OK);
+		
+		} catch(OrderNotFoundException e) {
+			
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			
+		}
+		
+	}
 	
-	// TODO - updateOrder (@Mappings, URI=/orders/{id}, and method)
+	@PutMapping("/orders/{id}")
+	public ResponseEntity<Object> updateOrder (@PathVariable("id") Long id, @RequestBody Order order) throws OrderNotFoundException {
+		
+		order = orderService.updateOrder(order, id);
+		Link ordersLink = linkTo(methodOn(OrderController.class).deleteBookOrder(id)).withRel("Update_Return_or_cancel");
+		order.add(ordersLink);
+		
+		return new ResponseEntity<>(order, HttpStatus.OK);
+		
+	}
 	
-	// TODO - deleteBookOrder (@Mappings, URI=/orders/{id}, and method)
+	@DeleteMapping("/orders/{id}")
+	public ResponseEntity<Object> deleteBookOrder (@PathVariable("id") Long id) {
+		
+		orderService.deleteOrder(id);
+		
+		return new ResponseEntity<>("Order with id: '"+id+"' deleted!", HttpStatus.OK);
+		
+	}
 	
 }

@@ -32,17 +32,32 @@ public class AuthorService {
 		return author;
 	}
 	
-	// TODO public saveAuthor(Author author)
+	public Author saveAuthor(Author author) {
+		
+		return authorRepository.save(author);
+	}
 		
 	
 	// TODO public Author updateAuthor(Author author, int id)
 		
 	
-	// TODO public List<Author> findAll()
+	public List<Author> findAll() {
+		
+		return (List<Author>) authorRepository.findAll();
+		
+	}
+	
 	
 	
 	// TODO public void deleteById(Long id) throws AuthorNotFoundException 
 
 	
-	// TODO public Set<Book> findBooksByAuthorId(Long id)
+	public Set<Book> findBooksByAuthorId(Long id) throws AuthorNotFoundException {
+		
+		Author author = authorRepository.findById(id)
+				.orElseThrow(()-> new AuthorNotFoundException("Author with the id: "+id+ "not found!"));
+		
+		return (Set<Book>) author;
+		
+	}
 }
