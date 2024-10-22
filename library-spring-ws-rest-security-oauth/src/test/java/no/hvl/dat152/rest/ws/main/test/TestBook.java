@@ -139,7 +139,7 @@ class TestBook {
 	
 	private Book createRandomBook() throws AuthorNotFoundException {
 		
-		Author savedAuthor = authorService.findById(4L);
+		Author savedAuthor = authorService.findById((int) 4L);
 		
 		Set<Author> authors = new HashSet<Author>();
 		authors.add(savedAuthor);
@@ -154,7 +154,7 @@ class TestBook {
 	
 	private Book createRandomBook2() throws AuthorNotFoundException {
 		
-		Author savedAuthor = authorService.findById(5L);
+		Author savedAuthor = authorService.findById((int) 5L);
 		
 		Set<Author> authors = new HashSet<Author>();
 		authors.add(savedAuthor);

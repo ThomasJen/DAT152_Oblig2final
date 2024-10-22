@@ -8,6 +8,7 @@ import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import no.hvl.dat152.rest.ws.exceptions.UnauthorizedOrderActionException;
 import no.hvl.dat152.rest.ws.exceptions.UserNotFoundException;
 import no.hvl.dat152.rest.ws.model.Order;
 import no.hvl.dat152.rest.ws.model.User;
+import no.hvl.dat152.rest.ws.service.OrderService;
 import no.hvl.dat152.rest.ws.service.UserService;
 
 /**
@@ -36,5 +38,119 @@ import no.hvl.dat152.rest.ws.service.UserService;
 public class UserController {
 
 	// TODO authority annotation
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private OrderService orderService;
+	
+	@GetMapping("/users")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public ResponseEntity<Object> getUsers(){
+		
+		List<User> users = userService.findAllUsers();
+		
+		if(users.isEmpty())
+			
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		else
+			return new ResponseEntity<>(users, HttpStatus.OK);
+	}
+	
+	@GetMapping(value = "/users/{id}")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public ResponseEntity<Object> getUser(@PathVariable("id") Long id) throws UserNotFoundException, OrderNotFoundException{
+		
+		User user = userService.findUser(id);
+		
+		return new ResponseEntity<>(user, HttpStatus.OK);	
+		
+	}
+	
+	@PostMapping("/users")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public ResponseEntity<Object> createUser(@RequestBody User user) {
+		
+		user = userService.saveUser(user);
+		
+		return new ResponseEntity<>(user, HttpStatus.CREATED);
+		
+	}
+
+	@PutMapping("/users/{id}")
+	public ResponseEntity<Object> updateUser (@RequestBody User user, 
+						@PathVariable("id") Long id) throws UserNotFoundException {
+		
+		user = userService.updateUser(user, id);
+		
+		return new ResponseEntity<>(user, HttpStatus.OK);
+		
+	}
+	
+	@DeleteMapping("/users/{id}")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public ResponseEntity<Object> deleteUser (@PathVariable("id") Long id) throws UserNotFoundException {
+		
+		userService.deleteUser(id);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+		
+	}
+	
+	@GetMapping("/users/{id}/orders")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public ResponseEntity<Object> getUserOrders (@PathVariable("id") Long id) throws UserNotFoundException {
+		
+		Set<Order> orders = userService.getUserOrders(id);
+		
+		if(orders == null || orders.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		}
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+		
+	}
+	
+	
+	// TODO - getUserOrder (@Mappings, URI=/users/{uid}/orders/{oid}, and method)
+	@GetMapping("/users/{uid}/orders/{oid}")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	 public EntityModel<Order> getUserOrder(@PathVariable Long userId, @PathVariable Long orderId) throws OrderNotFoundException {
+	        // Fetch order by ID from the service
+	        Order order = orderService.findOrder(orderId);
+	        return EntityModel.of(order,
+	                linkTo(methodOn(UserController.class).getUserOrder(userId, orderId)).withSelfRel());
+	 }
+
+	// TODO - deleteUserOrder (@Mappings, URI, and method)
+	 @DeleteMapping("users/{uid}/orders/{oid}")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	 public ResponseEntity<Void> deleteUserOrder(@PathVariable("uid")Long userId, @PathVariable("oid")Long orderId) throws UserNotFoundException, OrderNotFoundException {
+		 
+		 userService.deleteOrderForUser(userId, orderId);
+		 
+		 return new ResponseEntity<>(HttpStatus.OK);
+	 }
+	
+	@PostMapping("/users/{id}/orders")
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public EntityModel<Order> createUserOrder (@PathVariable("id") Long id, @RequestBody Order order) 
+			throws UserNotFoundException, OrderNotFoundException {
+		
+		Order savedOrder = orderService.saveOrder(order);
+		
+		//	HATEOAS links
+		EntityModel<Order> resource = EntityModel.of(savedOrder); 
+		
+		resource.add(linkTo(methodOn(UserController.class).getUserOrder(id, savedOrder.getId())).withSelfRel());
+		
+		resource.add(linkTo(methodOn(UserController.class).getUserOrders(id)).withRel("user-orders"));
+		
+		resource.add(linkTo(methodOn(UserController.class).updateUser(null, id)).withRel("update-user"));
+		
+		resource.add(linkTo(methodOn(UserController.class).getUser(id)).withRel("get-user"));
+		
+		return resource;
+	}
 	
 }

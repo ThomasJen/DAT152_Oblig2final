@@ -40,4 +40,6 @@ public interface OrderRepository extends CrudRepository<Order, Long>, PagingAndS
 	@Query(value = "SELECT user_email FROM orders WHERE id = :id", nativeQuery=true)
 	String findEmailByOrderId(Long id);
 
+	Order getReferenceById(Long id);
+
 }
