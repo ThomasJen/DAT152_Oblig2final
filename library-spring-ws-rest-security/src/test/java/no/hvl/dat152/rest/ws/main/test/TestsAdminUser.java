@@ -32,7 +32,7 @@ class TestsAdminUser {
 		Response response = RestAssured.given()
 				.header("Authorization", "Bearer "+ SUPER_ADMIN_TOKEN)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.queryParam("role", "admin")
+				.queryParam("role", "ADMIN")
 				.put(API_ROOT+"/users/{id}", 1);
 	    
 	    assertEquals(HttpStatus.OK.value(), response.getStatusCode());
@@ -46,7 +46,7 @@ class TestsAdminUser {
 		Response response = RestAssured.given()
 				.header("Authorization", "Bearer "+ USER_TOKEN)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.queryParam("role", "super_admin")
+				.queryParam("role", "SUPER_ADMIN")
 				.put(API_ROOT+"/users/{id}", 1);
 	    
 	    assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatusCode());
@@ -58,7 +58,7 @@ class TestsAdminUser {
 		
 		Response response = RestAssured.given()
 				.header("Authorization", "Bearer "+ SUPER_ADMIN_TOKEN)
-				.queryParam("role", "user")
+				.queryParam("role", "USER")
 				.delete(API_ROOT+"/users/{id}", 3);
 	    
 	    assertEquals(HttpStatus.OK.value(), response.getStatusCode());
