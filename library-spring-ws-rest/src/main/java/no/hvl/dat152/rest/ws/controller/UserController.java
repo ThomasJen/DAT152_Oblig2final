@@ -95,6 +95,10 @@ public class UserController {
 		
 		Set<Order> orders = userService.getUserOrders(id);
 		
+		if(orders == null || orders.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		}
+		
 		return new ResponseEntity<>(HttpStatus.OK);
 		
 	}
@@ -109,23 +113,30 @@ public class UserController {
 	 }
 
 	// TODO - deleteUserOrder (@Mappings, URI, and method)
+	 @DeleteMapping("users/{uid}/orders/{oid}")
+	 public ResponseEntity<Void> deleteUserOrder(@PathVariable("uid")Long userId, @PathVariable("oid")Long orderId) throws UserNotFoundException, OrderNotFoundException {
+		 
+		 userService.deleteOrderForUser(userId, orderId);
+		 
+		 return new ResponseEntity<>(HttpStatus.OK);
+	 }
 	
 	@PostMapping("/users/{id}/orders")
-	public EntityModel<Order> createUserOrder (@PathVariable("id") Long userId, @RequestBody Order newOrder) 
+	public EntityModel<Order> createUserOrder (@PathVariable("id") Long id, @RequestBody Order order) 
 			throws UserNotFoundException, OrderNotFoundException {
 		
-		Order savedOrder = orderService.saveOrder(newOrder);
+		Order savedOrder = orderService.saveOrder(order);
 		
-		//	+ HATEOAS links
+		//	HATEOAS links
 		EntityModel<Order> resource = EntityModel.of(savedOrder); 
 		
-		resource.add(linkTo(methodOn(UserController.class).getUserOrder(userId, savedOrder.getId())).withSelfRel());
+		resource.add(linkTo(methodOn(UserController.class).getUserOrder(id, savedOrder.getId())).withSelfRel());
 		
-		resource.add(linkTo(methodOn(UserController.class).getUserOrders(userId)).withRel("user-orders"));
+		resource.add(linkTo(methodOn(UserController.class).getUserOrders(id)).withRel("user-orders"));
 		
-		resource.add(linkTo(methodOn(UserController.class).updateUser(null, userId)).withRel("update-user"));
+		resource.add(linkTo(methodOn(UserController.class).updateUser(null, id)).withRel("update-user"));
 		
-		resource.add(linkTo(methodOn(UserController.class).getUser(userId)).withRel("get-user"));
+		resource.add(linkTo(methodOn(UserController.class).getUser(id)).withRel("get-user"));
 		
 		return resource;
 	}

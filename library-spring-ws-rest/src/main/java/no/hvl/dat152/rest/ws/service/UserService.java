@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import no.hvl.dat152.rest.ws.exceptions.OrderNotFoundException;
 import no.hvl.dat152.rest.ws.exceptions.UserNotFoundException;
 import no.hvl.dat152.rest.ws.model.Order;
 import no.hvl.dat152.rest.ws.model.User;
+import no.hvl.dat152.rest.ws.repository.OrderRepository;
 import no.hvl.dat152.rest.ws.repository.UserRepository;
 
 /**
@@ -26,6 +28,9 @@ public class UserService {
 	private UserRepository userRepository;
 	@Autowired
 	private OrderService orderService; 
+	@Autowired
+	private OrderRepository orderRepository;
+	
 
 	
 	public List<User> findAllUsers(){
@@ -75,9 +80,29 @@ public class UserService {
 		
 	}
 	
-	// TODO public Order getUserOrder(Long userid, Long oid)
+	public Order getUserOrder(Long userid, Long oid) throws UserNotFoundException, OrderNotFoundException {
+		
+		User user = userRepository.findById(userid).orElseThrow(() -> new UserNotFoundException("user: " + userid + " not found"));
+		
+		for(Order order : user.getOrders()) {
+			if(order.getId().equals(oid)) {
+				return order;
+			}
+			
+		}
+		
+		throw new OrderNotFoundException("order id: " + oid + " not found for user" + userid);
+	}
 	
-	// TODO public void deleteOrderForUser(Long userid, Long oid)
+	public void deleteOrderForUser(Long userid, Long oid) throws UserNotFoundException, OrderNotFoundException {
+		
+		User user = userRepository.findById(userid).orElseThrow(() -> new UserNotFoundException("user: " + userid + " not found"));
+		
+		
+		Order order = orderRepository.findById(userid).orElseThrow(() -> new OrderNotFoundException("order: " + oid + " not found for user"));
+		orderRepository.delete(order);
+		
+	}
 	
 	public User createOrdersForUser(Long userid, Order order) throws UserNotFoundException {
 		

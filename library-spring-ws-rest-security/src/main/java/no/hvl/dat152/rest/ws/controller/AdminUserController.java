@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import no.hvl.dat152.rest.ws.exceptions.UserNotFoundException;
+import no.hvl.dat152.rest.ws.model.Role;
 import no.hvl.dat152.rest.ws.model.User;
 import no.hvl.dat152.rest.ws.service.AdminUserService;
 
@@ -30,23 +31,23 @@ public class AdminUserController {
 	private AdminUserService userService;
 	
 	@PutMapping("/users/{id}")
-	// TODO authority annotation
-	public ResponseEntity<Object> updateUserRole(@PathVariable("id") Long id, @RequestParam("role") String role) 
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
+	public ResponseEntity<Object> updateUserRole(@PathVariable("id") Long id, @RequestParam("role") Role role) 
 			throws UserNotFoundException{
 		
-		// TODO
+		User updatedUser = userService.updateUserRole(id, role);
 		
-		return null;
+		return ResponseEntity.ok(updatedUser);
 	}
 	
 	@DeleteMapping("/users/{id}")
-	// TODO authority annotation
+	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> deleteUserRole(@PathVariable("id") Long id, 
 			@RequestParam("role") String role) throws UserNotFoundException{
+				
+		User deletedUser = userService.deleteUserRole(id, role);
 		
-		// TODO
-		
-		return null;
+		return ResponseEntity.ok(deletedUser);
 	}
 	
 }

@@ -30,6 +30,50 @@ public class OrderService {
 	
 	// TODO copy your solutions from previous tasks!
 	
+	public Order saveOrder(Order order) {
+		
+		order = orderRepository.save(order);
+		
+		return order;
+	}
+	
+	public void deleteOrder(Long id) { 
+		
+		orderRepository.delete(orderRepository.getReferenceById(id));
+		
+	}
+	
+	public List<Order> findAllOrders() {
+		
+		List<Order> orders = (List<Order>) orderRepository.findAll();
+		return orders;
+		
+	}
+	
+	public List<Order> findByExpiryDate(LocalDate expiry, Pageable page) {
+		
+		Page<Order> orders = orderRepository.findByExpiryBefore(expiry, page);
+		List<Order> orderAsList = orders.getContent();
+		System.out.println(orderAsList.toString());
+		
+		return orderAsList;
+		
+	}
+	
+	public Order updateOrder(Order order, Long id) throws OrderNotFoundException {
+		
+		Order orderToUpdate = findOrder(id);
+		order.setId(orderToUpdate.getId());
+		
+		return orderRepository.save(order);
+		
+	}
+
+	public List<Order> findOrdersByExpiredDate(LocalDate expiryDate, int limit, int offset) {
+		
+		return orderRepository.findOrderByExpiry(expiryDate, 10, 0);
+	}
+	
 	public Order findOrder(Long id) throws OrderNotFoundException, UnauthorizedOrderActionException {
 		
 		verifyPrincipalOfOrder(id);	// verify who is making this request - Only ADMIN or SUPER_ADMIN can access any order 

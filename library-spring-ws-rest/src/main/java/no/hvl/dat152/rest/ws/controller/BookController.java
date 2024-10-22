@@ -69,7 +69,7 @@ public class BookController {
 	}
 	
 	@GetMapping("/books/{isbn}/authors")
-	public ResponseEntity<Object> getAuthorsByBookISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException{
+	public ResponseEntity<Object> getAuthorsOfBookByISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException{
 		
 		Set<Author> authors = bookService.findAuthorsOfBookByISBN(isbn);
 		
@@ -83,14 +83,14 @@ public class BookController {
 	@PutMapping("/books/{isbn}")
 	public ResponseEntity<Book> updateBookByISBN(@RequestBody Book book, @PathVariable("isbn") String isbn) throws UpdateBookFailedException{
 
-		Book nbook;
+		Book updatebook;
 		try {
-			nbook = bookService.updateBook(book, isbn);
+			updatebook = bookService.updateBook(book, isbn);
 		}catch(BookNotFoundException e) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		
-		return new ResponseEntity<>(nbook, HttpStatus.OK);
+		return new ResponseEntity<>(updatebook, HttpStatus.OK);
 	}
 	
 	

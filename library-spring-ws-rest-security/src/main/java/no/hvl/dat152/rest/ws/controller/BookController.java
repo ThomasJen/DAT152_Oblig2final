@@ -37,5 +37,69 @@ import no.hvl.dat152.rest.ws.service.BookService;
 public class BookController {
 	
 	// TODO authority annotation
+	@Autowired
+	private BookService bookService;
+	
+	@GetMapping("/books")
+	public ResponseEntity<Object> getAllBooks(){
+		
+		List<Book> books = bookService.findAll();
+		
+		if(books.isEmpty())
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		
+		return new ResponseEntity<>(books, HttpStatus.OK);		
+	}
+	
+	@GetMapping("/books/{isbn}")
+	public ResponseEntity<Object> getBook(@PathVariable("isbn") String isbn) throws BookNotFoundException{
+		
+		Book book = bookService.findByISBN(isbn);
+		
+		return new ResponseEntity<>(book, HttpStatus.OK);
+				
+	}
+	
+	@PostMapping("/books")
+	public ResponseEntity<Book> createBook(@RequestBody Book book){
+		
+		Book nbook = bookService.saveBook(book);
+		
+		return new ResponseEntity<>(nbook, HttpStatus.CREATED);
+	}
+	
+	@GetMapping("/books/{isbn}/authors")
+	public ResponseEntity<Object> getAuthorsByBookISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException{
+		
+		Set<Author> authors = bookService.findAuthorsOfBookByISBN(isbn);
+		
+		if(authors.isEmpty())
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		
+		return new ResponseEntity<>(authors, HttpStatus.OK);		
+	}
+	
+
+	@PutMapping("/books/{isbn}")
+	public ResponseEntity<Book> updateBookByISBN(@RequestBody Book book, @PathVariable("isbn") String isbn) throws UpdateBookFailedException{
+
+		Book nbook;
+		try {
+			nbook = bookService.updateBook(book, isbn);
+		}catch(BookNotFoundException e) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<>(nbook, HttpStatus.OK);
+	}
+	
+	
+	@DeleteMapping("/books/{isbn}")
+	public ResponseEntity<String> deleteBookByISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException{
+		
+		bookService.deleteByISBN(isbn);
+		
+		return new ResponseEntity<>(HttpStatus.OK);		
+	}
 
 }

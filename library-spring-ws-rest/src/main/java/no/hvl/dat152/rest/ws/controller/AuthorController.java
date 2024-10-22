@@ -49,7 +49,7 @@ public class AuthorController {
 	@GetMapping("/authors/{id}")
 	public ResponseEntity<Object> getAuthor(@PathVariable("id") long id) throws AuthorNotFoundException {
 
-		Author author = authorservice.findById(id);
+		Author author = authorservice.findById((int) id);
 		if (author != null) {
 			return new ResponseEntity<>(author, HttpStatus.OK);
 		} else
@@ -71,10 +71,10 @@ public class AuthorController {
 	
 	// TODO - updateAuthor (@Mappings, URI, and method)
 	@PutMapping("/authors/{id}")
-	public ResponseEntity<Object> updateAuthor(@PathVariable("id") long id, @RequestBody Author author)
+	public ResponseEntity<Author> updateAuthor(@PathVariable("id") long id, @RequestBody Author author)
 			throws AuthorNotFoundException {
 
-		Author authorToUpdate = authorservice.findById(id);
+		Author authorToUpdate = authorservice.findById((int) id);
 		if (author.getFirstname() != null || author.getFirstname() != "") {
 			authorToUpdate.setFirstname(author.getFirstname());
 		}
