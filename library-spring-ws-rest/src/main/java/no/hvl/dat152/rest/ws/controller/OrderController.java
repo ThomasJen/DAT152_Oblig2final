@@ -73,7 +73,7 @@ public class OrderController {
 	}
 	
 	@PutMapping("/orders/{id}")
-	public ResponseEntity<Object> updateOrder (@PathVariable("id") Long id, @RequestBody Order order) throws OrderNotFoundException {
+	public ResponseEntity<Order> updateOrder (@PathVariable("id") Long id, @RequestBody Order order) throws OrderNotFoundException {
 		
 		order = orderService.updateOrder(order, id);
 		Link ordersLink = linkTo(methodOn(OrderController.class).deleteBookOrder(id)).withRel("Update_Return_or_cancel");
