@@ -59,6 +59,15 @@ public class AuthorController {
 	
 	
 	// TODO - getBooksByAuthorId (@Mappings, URI, and method)
+	@GetMapping("/authors/{id}/books")
+	public ResponseEntity<Set<Book>> getBooksByAuthorId(@PathVariable("id") int id) {
+		try {
+			Set<Book> books = authorservice.findBooksByAuthorId(id);
+			return new ResponseEntity<>(books, HttpStatus.OK);
+		} catch  (Exception e){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
 	
 	// TODO - createAuthor (@Mappings, URI, and method)
 	@PostMapping("/authors")

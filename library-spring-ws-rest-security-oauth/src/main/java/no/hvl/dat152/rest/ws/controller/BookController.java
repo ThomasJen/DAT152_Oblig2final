@@ -41,8 +41,8 @@ public class BookController {
 	@Autowired
 	private BookService bookService;
 	
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/books")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> getAllBooks(){
 		
 		List<Book> books = bookService.findAll();
@@ -53,8 +53,8 @@ public class BookController {
 		return new ResponseEntity<>(books, HttpStatus.OK);		
 	}
 	
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/books/{isbn}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> getBook(@PathVariable("isbn") String isbn) throws BookNotFoundException{
 		
 		Book book = bookService.findByISBN(isbn);
@@ -63,6 +63,7 @@ public class BookController {
 				
 	}
 	
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping("/books")
 	public ResponseEntity<Book> createBook(@RequestBody Book book){
 		
@@ -71,6 +72,7 @@ public class BookController {
 		return new ResponseEntity<>(nbook, HttpStatus.CREATED);
 	}
 	
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/books/{isbn}/authors")
 	public ResponseEntity<Object> getAuthorsOfBookByISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException{
 		
@@ -83,8 +85,8 @@ public class BookController {
 	}
 	
 
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping("/books/{isbn}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Book> updateBookByISBN(@RequestBody Book book, @PathVariable("isbn") String isbn) throws UpdateBookFailedException{
 
 		Book updatebook;
@@ -98,8 +100,8 @@ public class BookController {
 	}
 	
 	
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@DeleteMapping("/books/{isbn}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<String> deleteBookByISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException{
 		
 		bookService.deleteByISBN(isbn);

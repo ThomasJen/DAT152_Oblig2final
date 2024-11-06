@@ -35,8 +35,8 @@ public class AuthorController {
 	private AuthorService authorservice;
 	
 	// TODO - getAllAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/authors")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> getAllAuthors() {
 
 		List<Author> authors = authorservice.findAll();
@@ -49,22 +49,34 @@ public class AuthorController {
 	}
 	
 	// TODO - getAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping("/authors/{id}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> getAuthor(@PathVariable("id") long id) throws AuthorNotFoundException {
 
-		Author author = authorservice.findById((int) id);
-		if (author != null) {
+		try {
+			Author author = authorservice.findById((int) id);
+			
 			return new ResponseEntity<>(author, HttpStatus.OK);
-		} else
+		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
+		}
+		
 	}
 	
-	
 	// TODO - getBooksByAuthorId (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('USER')")
+	@GetMapping("/authors/{id}/books")
+	public ResponseEntity<Set<Book>> findBooksByAuthorId(@PathVariable("id") int id) {
+        try {
+            Set<Book> books = authorservice.findBooksByAuthorId(id);
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 	
 	// TODO - createAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping("/authors")
 	public ResponseEntity<Object> createAuthor(@RequestBody Author author) {
 
@@ -74,8 +86,8 @@ public class AuthorController {
 	}
 	
 	// TODO - updateAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping("/authors/{id}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Author> updateAuthor(@PathVariable("id") long id, @RequestBody Author author)
 			throws AuthorNotFoundException {
 

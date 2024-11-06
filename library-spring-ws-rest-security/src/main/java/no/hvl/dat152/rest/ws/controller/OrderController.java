@@ -43,6 +43,7 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 	
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/orders")
    	public ResponseEntity<Object> getAllBorrowOrders (
    			@RequestParam(required = false) LocalDate expiry,
@@ -59,7 +60,7 @@ public class OrderController {
 	}
 	//filter by expiry and paginate 
    	
-   	
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/orders/{id}")
 	public ResponseEntity<Object> getBorrowOrder (@PathVariable("id") Long id) throws OrderNotFoundException{
 		
@@ -75,6 +76,7 @@ public class OrderController {
 		
 	}
 	
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping("/orders/{id}")
 	public ResponseEntity<Object> updateOrder (@PathVariable("id") Long id, @RequestBody Order order) throws OrderNotFoundException {
 		
@@ -86,6 +88,7 @@ public class OrderController {
 		
 	}
 	
+	@PreAuthorize("hasAuthority('USER')")
 	@DeleteMapping("/orders/{id}")
 	public ResponseEntity<Object> deleteBookOrder (@PathVariable("id") Long id) {
 		

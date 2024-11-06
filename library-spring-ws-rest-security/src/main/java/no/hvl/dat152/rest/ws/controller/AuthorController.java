@@ -35,6 +35,7 @@ public class AuthorController {
 	private AuthorService authorservice;
 	
 	// TODO - getAllAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/authors")
 	public ResponseEntity<Object> getAllAuthors() {
 
@@ -48,6 +49,7 @@ public class AuthorController {
 	}
 	
 	// TODO - getAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/authors/{id}")
 	public ResponseEntity<Object> getAuthor(@PathVariable("id") int id) throws AuthorNotFoundException {
 
@@ -61,8 +63,20 @@ public class AuthorController {
 	
 	
 	// TODO - getBooksByAuthorId (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('USER')")
+	@GetMapping("/authors/{id}/books")
+	public ResponseEntity<Set<Book>> findBooksByAuthorId(@PathVariable("id") int id) {
+        try {
+            Set<Book> books = authorservice.findBooksByAuthorId(id);
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+	
 	
 	// TODO - createAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping("/authors")
 	public ResponseEntity<Object> createAuthor(@RequestBody Author author) {
 
@@ -72,6 +86,7 @@ public class AuthorController {
 	}
 	
 	// TODO - updateAuthor (@Mappings, URI, and method)
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping("/authors/{id}")
 	public ResponseEntity<Object> updateAuthor(@PathVariable("id") int id, @RequestBody Author author)
 			throws AuthorNotFoundException {

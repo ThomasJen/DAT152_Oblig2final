@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import no.hvl.dat152.rest.ws.exceptions.BookNotFoundException;
 import no.hvl.dat152.rest.ws.exceptions.OrderNotFoundException;
 import no.hvl.dat152.rest.ws.exceptions.UserNotFoundException;
 import no.hvl.dat152.rest.ws.model.Order;
@@ -91,7 +92,7 @@ public class UserController {
 	}
 	
 	@GetMapping("/users/{id}/orders")
-	public ResponseEntity<Object> getUserOrders (@PathVariable("id") Long id) throws UserNotFoundException {
+	public ResponseEntity<Set<Order>> getUserOrders (@PathVariable("id") Long id) throws UserNotFoundException {
 		
 		Set<Order> orders = userService.getUserOrders(id);
 		
@@ -99,12 +100,12 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
 		
-		return new ResponseEntity<>(HttpStatus.OK);
-		
+		return new ResponseEntity<>(orders, HttpStatus.OK);
 	}
 	
 	
 	// TODO - getUserOrder (@Mappings, URI=/users/{uid}/orders/{oid}, and method)
+	@GetMapping("users/{oid}/orders")
 	 public EntityModel<Order> getUserOrder(@PathVariable Long userId, @PathVariable Long orderId) throws OrderNotFoundException {
 	        // Fetch order by ID from the service
 	        Order order = orderService.findOrder(orderId);
@@ -121,24 +122,24 @@ public class UserController {
 		 return new ResponseEntity<>(HttpStatus.OK);
 	 }
 	
-	@PostMapping("/users/{id}/orders")
-	public EntityModel<Order> createUserOrder (@PathVariable("id") Long id, @RequestBody Order order) 
-			throws UserNotFoundException, OrderNotFoundException {
-		
-		Order savedOrder = orderService.saveOrder(order);
+	@PostMapping("/users/{uid}/orders")
+	public ResponseEntity<Object> createUserOrder (@PathVariable("uid") Long uid, @RequestBody Order order) 
+			throws UserNotFoundException, OrderNotFoundException, BookNotFoundException {
 		
 		//	HATEOAS links
-		EntityModel<Order> resource = EntityModel.of(savedOrder); 
+		Link viewuser = linkTo(methodOn(UserController.class).getUser(uid)).withRel("view user").withType("GET");
 		
-		resource.add(linkTo(methodOn(UserController.class).getUserOrder(id, savedOrder.getId())).withSelfRel());
+		User user = userService.createOrdersForUser(uid, order);
 		
-		resource.add(linkTo(methodOn(UserController.class).getUserOrders(id)).withRel("user-orders"));
+		for(Order norder : user.getOrders()) {
+			Link viewOrders = linkTo(methodOn(UserController.class).getUserOrder(user.getUserid(), norder.getId()))
+					.withRel("view order").withType("GET");
+			norder.add(viewOrders);
+			norder.add(viewuser);
+		}
 		
-		resource.add(linkTo(methodOn(UserController.class).updateUser(null, id)).withRel("update-user"));
+		return (ResponseEntity<Object>) new ResponseEntity<Object>(user.getOrders(), HttpStatus.CREATED); 
 		
-		resource.add(linkTo(methodOn(UserController.class).getUser(id)).withRel("get-user"));
-		
-		return resource;
 	}
 	
 }

@@ -43,8 +43,8 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 	
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping("/orders")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
    	public ResponseEntity<Object> getAllBorrowOrders (
    			@RequestParam(required = false) LocalDate expiry,
    			@RequestParam(defaultValue = "0") int page,
@@ -61,8 +61,8 @@ public class OrderController {
 	//filter by expiry and paginate 
    	
    	
+	@PreAuthorize("hasAuthority('USER')")
 	@GetMapping("/orders/{id}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> getBorrowOrder (@PathVariable("id") Long id) throws OrderNotFoundException{
 		
 		try {
@@ -77,6 +77,7 @@ public class OrderController {
 		
 	}
 	
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping("/orders/{id}")
 	public ResponseEntity<Object> updateOrder (@PathVariable("id") Long id, @RequestBody Order order) throws OrderNotFoundException {
 		
@@ -87,9 +88,9 @@ public class OrderController {
 		return new ResponseEntity<>(order, HttpStatus.OK);
 		
 	}
-	
+		
+	@PreAuthorize("hasAuthority('USER')")
 	@DeleteMapping("/orders/{id}")
-	@PreAuthorize("hasAuthority('SUPER_ADMIN')")
 	public ResponseEntity<Object> deleteBookOrder (@PathVariable("id") Long id) {
 		
 		orderService.deleteOrder(id);
